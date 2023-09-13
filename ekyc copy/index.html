@@ -1,0 +1,137 @@
+<!-- fetch("http://localhost:3000/go", {
+  method: "GET",
+  
+}); -->
+
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Excel File Upload</title>
+  </head>
+  <style>
+    body {
+      text-align: center;
+      width: 100vw;
+    }
+    input {
+      display: none;
+    }
+    label {
+      height: 60px;
+      width: 200px;
+      border-radius: 5px;
+      background-color: rgb(153, 231, 201);
+      padding: 10px;
+      cursor: pointer;
+    }
+    button {
+      border-radius: 20px;
+      border: none;
+      height: 40px;
+      width: 160px;
+      background: rgb(21, 157, 235);
+      color: white;
+      cursor: pointer;
+      margin: 20px;
+      
+    }
+  </style>
+
+  <body>
+    <h1>Upload an Excel File</h1>
+
+    <form
+      enctype="multipart/form-data"
+      action="http://localhost:3000/upload-excel"
+      method="POST"
+      id="excelForm"
+    >
+      <div class="image-selection">
+        <label for="acceptorinput">Choose an Excel File</label>
+        <input
+          id="acceptorinput"
+          type="file"
+          name="excelFile"
+          accept=".xlsx"
+          class="acceptingfile"
+        />
+        <div id="file-name" style="margin-top:10px"></div>
+      </div>
+      <button id="qwerty" type="submit" class="submitbtn">Upload Excel File</button>
+    </form>
+    <button id="goButton" style="display: none; background-color: blueviolet; " >Go</button>
+
+    <div id="responseMessage"></div>
+    <script>
+      let parameterForGo = "";
+
+      function go() {
+        console.log("Received parameter:", parameterForGo);
+
+        // Assuming the parameter is the file name, you can use it here
+        fetch("http://localhost:3000/go", {
+          method: "POST",
+          body: JSON.stringify({ fname: parameterForGo }), // Send the file name to the server
+          headers: {
+            "Content-Type": "application/json", // Set the content type to JSON
+          },
+        });
+
+        //window.location.reload();
+        // Perform actions with the received parameter
+      }
+
+      document
+        .getElementById("excelForm")
+        .addEventListener("submit", function (e) {
+          e.preventDefault();
+
+          // Create a FormData object to send the file
+          const formData = new FormData(this);
+
+          fetch("http://localhost:3000/upload-excel", {
+            method: "POST",
+            body: formData,
+          })
+            .then((response) => {
+              if (response.status === 200) {
+                // Successful response
+                document.getElementById("goButton").style.display = "block";
+                document.getElementById("qwerty").style.display = "none"; // Show the "Go" button
+
+                // Read the response body as text and pass it to the go() function
+                return response.json(); // Parse the response as JSON
+              } else {
+                // Handle other response statuses (e.g., errors)
+                throw new Error("File upload failed");
+              }
+            })
+            .then((data) => {
+              // Handle the response data
+              console.log("Response Data:", data);
+              document.getElementById("responseMessage").innerText =
+                "Upload successful";
+
+              // Call the go() function with the received parameter
+              parameterForGo = data.data; // Pass the file name from the response
+            })
+            .catch((error) => {
+              console.error("Error:", error);
+              document.getElementById("responseMessage").innerText =
+                "Error uploading Excel file";
+            });
+        });
+      document.getElementById("goButton").addEventListener("click", go);
+    </script>
+    <script>
+      // JavaScript to update the displayed file name
+      const fileInput = document.getElementById("acceptorinput");
+      const fileNameDisplay = document.getElementById("file-name");
+      
+      fileInput.addEventListener("change", function() {
+      const fileName = fileInput.files[0].name;
+      fileNameDisplay.textContent = `Selected File: ${fileName}`;
+      });
+      </script>
+  </body>
+</html>
